@@ -1,80 +1,108 @@
 'use strict'
 // No cambies los nombres de las funciones.
 
-function factorear(num) {
-  // Factorear el número recibido como parámetro y devolver en un array
-  // los factores por los cuales se va dividiendo a dicho número (De menor a mayor)
-  // Ej: factorear(180) --> [1, 2, 2, 3, 3, 5] Ya que 1x2x2x3x3x5 = 180 y son todos números primos
-  // Tu código:
-  let factores = [1];
-  let divisor = 2;
-​
-  while (num !== 1) {
-    if (num % divisor === 0) {
-      factores.push(divisor);
-      num /= divisor;
-    } else {
-      divisor++;
-    }
-  }
-  return factores;
-}
-
-function bubbleSort(array) {
-  // Implementar el método conocido como bubbleSort para ordenar de menor a mayor
+function quickSort(array) {
+  // Implementar el método conocido como QuickSort para ordenar de menor a mayor
   // el array recibido como parámetro
   // Devolver el array ordenado resultante
   // Tu código:
-  for (let i = 0; i < array.length; i++) {
-    for (let j = i + 1; j < array.length; j++) {
-      if (array[i] > array[j]) {
-        let aux = array[i];
-        array[i] = array[j];
-        array[j] = aux;
+
+    // Si el array esta vacio o solo tiene un elemento, ya esta ordenado y lo retorna
+    if (array.length <= 1) {
+      return array;
+    }
+  
+    // Escogemos el pivote como el ultimo elemento del array
+    const pivot = array[array.length - 1];
+  
+    // Creamos dos arrays para almacenar los elementos menores y mayores que el pivote
+    const left = [];
+    const right = [];
+  
+    // Recorremos el array, excepto el ultimo elemento que es el pivote
+    for (let i = 0; i < array.length - 1; i++) {
+
+    // Comparamos cada elemento con el pivote y lo colocamos en el array correspondiente (left o right)
+      if (array[i] < pivot) {
+        left.push(array[i]);
+      } else {
+        right.push(array[i]);
       }
     }
-  }
-  return array;
+  
+    /*
+      Ordenamos recursivamente los sub arrays izquierdo y derecho volviendo a llamar a la funcion quickSort
+      con los arrays de izquierda y derecha
+    */
+    const sortedLeft = quickSort(left);
+    const sortedRight = quickSort(right);
+  
+    // Combinamos los sub arrays ordenados junto con el pivote en el array final
+    const sortedArray = sortedLeft.concat(pivot, sortedRight);
+
+    return sortedArray;
+
+    /*
+      tambien podemos retornarlo utilizando el operador spread
+      return [...sortedLeft, pivot, ...sortedRight];
+    */
 }
 
 
-function insertionSort(array) {
-  // Implementar el método conocido como insertionSort para ordenar de menor a mayor
-  // el array recibido como parámetro utilizando arreglos
+
+
+function mergeSort(array) {
+  // Implementar el método conocido como mergeSort para ordenar de menor a mayor
+  // el array recibido como parámetro
   // Devolver el array ordenado resultante
   // Tu código:
-  for (let i = 1; i < array.length; i++) {
-    let j = i - 1;
-    let aux = array[i];
-    while (j >= 0 && aux < array[j]) {
-      array[j + 1] = array[j];
-      j--;
-    }
-    array[j + 1] = aux;
+
+  // Si el array esta vacio o solo tiene un elemento, ya esta ordenado y lo retorna
+  if (array.length <= 1) {
+    return array;
   }
-  return array;
+
+  // Se divide el array en dos mitades
+  const middle = Math.floor(array.length / 2);
+  const left = array.slice(0, middle);
+  const right = array.slice(middle);
+
+  // Ordenar recursivamente las dos mitades
+  const sortedLeft = mergeSort(left);
+  const sortedRight = mergeSort(right);
+
+  // Combina y retorna las dos mitades ordenadas recibiendo el callback de la funcion merge
+  return merge(sortedLeft, sortedRight);
 }
 
 
-function selectionSort(array) {
-  // Implementar el método conocido como selectionSort para ordenar de menor a mayor
-  // el array recibido como parámetro utilizando dos arreglos
-  // Devolver el array ordenado resultante
-  // Tu código:
-  for (let i = 0; i < array.length - 1; i++) {
-    let min = i;
-    for (let j = i + 1; j < array.length; j++) {
-      if (array[j] < array[min]) {
-        min = j;
-      }
-    }
-    if (i !== min) {
-      let aux = array[i];
-      array[i] = array[min];
-      array[min] = aux;
+// Funcion auxiliar para combinar los arrays left y right en un nuevo array llamado merged
+function merge(left, right) {
+  const merged = [];
+
+  // mientras haya elementos en left y right
+  while (left.length && right.length) {
+  // Compara el primer elemento de cada array
+    if (left[0] < right[0]) {
+  // Extrae el primer elemento de left y lo agrega a merged
+      merged.push(left.shift()); 
+    } else {
+  // Extrae el primer elemento de right y lo agrega a merged
+      merged.push(right.shift()); 
     }
   }
-  return array;
+
+  
+  // mientras quedan elementos en left o right, se los agrega a merged
+  while (left.length) {
+    merged.push(left.shift());
+  }
+
+  while (right.length) {
+    merged.push(right.shift());
+  }
+
+  return merged;
 }
 
 
@@ -82,8 +110,6 @@ function selectionSort(array) {
 // --------------------------------
 
 module.exports = {
-  factorear,
-  bubbleSort,
-  insertionSort,
-  selectionSort,
+  quickSort,
+  mergeSort,
 };
