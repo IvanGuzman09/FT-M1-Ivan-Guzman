@@ -1,58 +1,115 @@
 'use strict';
 
-/*
-Definir las funciones recursivas nFactorial y nFibonacci.
-
-nFactorial(n) debe retornar el factorial de n sabiendo que, siendo n un número natural, su factorial (representado como n!) es el producto de n por todos los números naturales menores que él y mayores a 0. Ejemplo: 5! = 5 * 4 * 3 * 2 * 1
-
-nFibonacci(n) debe retornar el enésimo número de la secuencia de Fibonacci, tomando al 0 y al 1, respectivamente, como primer y segundo elementos de la misma, y sabiendo que cualquier elemento que se agregue a esta secuencia será el resultado de la suma del último elemento y el anterior.
-Ejemplo: nFibonacci(7) retornará 13, ya que 13 es el dígito que está en la posición 7 de la secuencia.
-
-Secuencia:  0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ... 
-
-
-Como ejercicio adicional y completamente opcional, al terminar de resolver este problema pueden intentar definir funciones que logren los mismos resultados pero de manera iterativa.
+/* EJERCICIO 1
+Implementar la clase LinkedList, definiendo los siguientes métodos:
+  - add: agrega un nuevo nodo al final de la lista;
+  - remove: elimina el último nodo de la lista y retorna su valor (tener en cuenta el caso particular de una lista de un solo nodo y de una lista vacía);
+  - search: recibe un parámetro y lo busca dentro de la lista, con una particularidad: el parámetro puede ser un valor o un callback. En el primer caso, buscamos un nodo cuyo valor coincida con lo buscado; en el segundo, buscamos un nodo cuyo valor, al ser pasado como parámetro del callback, retorne true. 
+  EJEMPLO 
+  search(3) busca un nodo cuyo valor sea 3;
+  search(isEven), donde isEven es una función que retorna true cuando recibe por parámetro un número par, busca un nodo cuyo valor sea un número par.
+  En caso de que la búsqueda no arroje resultados, search debe retornar null.
 */
-
-function nFactorial(n) {
-  if (n < 2) return 1;
-
-  return n * nFactorial(n - 1);
+function LinkedList() {
+  this.head = null;
 }
 
-function nFibonacci(n) {
-  if (n < 2) return n;
-
-  return nFibonacci(n - 2) + nFibonacci(n - 1);
+function Node(value) {
+  this.value = value;
+  this.next = null;
+}
+LinkedList.prototype.add = function (value) {
+  let newNode = new Node(value)
+  let current = this.head
+  if (!current) {
+    this.head = newNode
+    return newNode
+  }
+  while (current.next) {
+    current = current.next
+  }
+  current.next = newNode
+  return newNode
 }
 
-/*
-Implementar la clase Queue, sabiendo que es una estructura de tipo FIFO, donde el primer elemento que ingresa es el primero que se quita. Definir los siguientes métodos:
-  - enqueue: agrega un valor respetando el orden.
-  - dequeue: remueve un valor respetando el orden. Retorna undefined cuando la queue está vacía.
-  - size: retorna el tamaño (cantidad de elementos) de la queue.
+LinkedList.prototype.remove = function () {
+  let current = this.head
+  if (!current) return null;
+  if (!current.next) {
+    this.head = null
+    return current.value
+  }
+  while (current.next.next) {
+    current = current.next
+  }
+  let aux = current.next.value
+  current.next = null
+  return aux;
+}
 
-Pueden utilizar class o función constructora.
-*/
-
-function Queue() {
-  const cola = [];
-
-  this.enqueue = (valor) => cola.push(valor);
-
-  this.dequeue = () => {
-    if (cola.length === 0) return undefined;
-    else {
-      return cola.shift();
+LinkedList.prototype.search = function (value) {
+  let current = this.head
+  if (!current) return null
+  while (current) {
+    if (typeof value === 'function') {
+      if (value(current.value)) return current.value
     }
-  };
-
-  this.size = () => cola.length;
+    if (current.value === value) return value
+    current = current.next
+  }
+  return null
 }
 
-/*⚠️ No modificar nada debajo de esta línea ⚠️*/
+/* EJERCICIO 2
+Implementar la clase HashTable.
+Nuetra tabla hash, internamente, consta de un arreglo de buckets (slots, contenedores, o casilleros; es decir, posiciones posibles para almacenar la información), donde guardaremos datos en formato clave-valor (por ejemplo, {instructora: 'Ani'}).
+Para este ejercicio, la tabla debe tener 35 buckets (numBuckets = 35). (Luego de haber pasado todos los tests, a modo de ejercicio adicional, pueden modificar un poco la clase para que reciba la cantidad de buckets por parámetro al momento de ser instanciada.)
+
+La clase debe tener los siguientes métodos:
+  - hash: función hasheadora que determina en qué bucket se almacenará un dato. Recibe un input alfabético, suma el código numérico de cada caracter del input (investigar el método charCodeAt de los strings) y calcula el módulo de ese número total por la cantidad de buckets; de esta manera determina la posición de la tabla en la que se almacenará el dato.
+  - set: recibe el conjunto clave valor (como dos parámetros distintos), hashea la clave invocando al método hash, y almacena todo el conjunto en el bucket correcto.
+  - get: recibe una clave por parámetro, y busca el valor que le corresponde en el bucket correcto de la tabla.
+  - hasKey: recibe una clave por parámetro y consulta si ya hay algo almacenado en la tabla con esa clave (retorna un booleano).
+
+Ejemplo: supongamos que quiero guardar {instructora: 'Ani'} en la tabla. Primero puedo chequear, con hasKey, si ya hay algo en la tabla con el nombre 'instructora'; luego, invocando set('instructora', 'Ani'), se almacenará el par clave-valor en un bucket específico (determinado al hashear la clave)
+*/
+function HashTable() {
+  this.numBuckets = 35
+  this.buckets = []
+}
+
+HashTable.prototype.hash = function (string) {
+  let suma = 0;
+  for (let i = 0; i < string.length; i++) {
+    suma += string.charCodeAt(i)
+  }
+  return suma % this.numBuckets
+}
+
+HashTable.prototype.set = function (key, value) {
+  if (typeof key !== 'string') {
+    throw new TypeError('Keys must be strings')
+  }
+  let index = this.hash(key)
+  if (!this.buckets[index]) this.buckets[index] = {}
+  this.buckets[index][key] = value
+}
+
+HashTable.prototype.get = function (key) {
+  let index = this.hash(key)
+  return this.buckets[index][key]
+}
+HashTable.prototype.hasKey = function (key) {
+  let index = this.hash(key)
+  if (this.buckets[index][key]) return true;
+  return false;
+}
+
+// No modifiquen nada debajo de esta linea
+// --------------------------------
+
 module.exports = {
-   Queue,
-   nFactorial,
-   nFibonacci,
+   Node,
+   LinkedList,
+   HashTable,
 };
